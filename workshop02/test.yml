@@ -1,0 +1,23 @@
+- name: Connectivity test
+  hosts: all
+  tasks:
+     - name: Ping test
+       ping:
+     - name: Find 
+       find:
+         paths: /etc
+         file_type: file
+       register: etc_files
+     - name: etc_files results
+       debug:
+           msg: ">> {{ item.path }}"
+       loop:
+           "{{ etc_files.files }}"
+     - name: find if file exists
+       stat:
+           path: /etc/hosts
+       register: etc_hosts
+     - name: etc_hosts results
+       debug:
+           msg: " {{ etc_hosts.stat.exists }}"
+

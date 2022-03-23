@@ -1,0 +1,83 @@
+---
+# Block 1 - Setup code server
+- name: Setup code-server
+  hosts: all
+  vars:
+    install_dir: /usr/lib/code-server
+    cs: "code-server-4.2.0-linux-amd64"
+    cs_url: "https://github.com/coder/code-server/releases/download/v4.2.0/{{ cs }}.tar.gz"
+    cs_dir: "{{ install_dir }}/{{ cs }}"
+  tasks:
+  - name: Create required directory
+    file:
+      name: "{{ item }}"
+      state: directory
+      mode: '0755'
+    loop:
+    - "{{ install_dir }}"
+    - /var/lib/code-server
+  - name: Check if the file tarball exists
+    stat:
+      path: "{{ cs_dir }}"
+    register: cs_tarball
+  - name: Download tarball and unarchive
+    unarchive:
+      src: "{{ cs_url }}"
+      dest: "{{ install_dir }}"
+      remote_src: yes
+    when: not cs_tarball.stat.exists 
+  # - name: Copy the contents from /usr/local/opt to /usr/lib/code-server
+  #   copy:
+  #     src: "{{ cs_dir }}/"
+  #     dest: /usr/lib/code-server/
+  #     force: no
+  #     remote_src: yes
+  - name: Link code-server binary to /usr/bin
+    file:
+      src: /usr/lib/code-server/{{ cs }}/bin/code-server
+      dest: /usr/bin/code-server
+      state: link
+  - name: Generate code-server.service file
+    template:
+      src: "./templates/code-server-service.j2"
+      dest: /lib/systemd/system/code-server.service
+    notify: 
+    - Restart code-server service
+  
+  handlers: 
+  - name: Restart code-server service
+    systemd:
+      name: code-server
+      daemon_reload: true
+      enabled: true
+      state: restarted
+
+# Block 2 - Setup nginx server
+- name: Setup nginx server
+  hosts: all
+  tasks:
+  - name: Install nginx package
+    apt: name=nginx state=latest update_cache=yes
+  - name : Update nginx config file
+    template:
+        src: "./templates/code-server-conf.j2"
+        dest: "/etc/nginx/sites-available/code-server.conf"
+  - name: Link nginx sites-available/code-server.conf to sites-enabled
+    file:
+      src: /etc/nginx/sites-available/code-server.conf
+      dest: /etc/nginx/sites-enabled/code-server.conf
+      state: link
+    notify:
+    - Restart nginx service
+  - name: Print domain name
+    debug:
+       msg: "code server domain: {{ code_server_domain }}"
+
+  handlers:
+  - name: Restart nginx service
+    systemd:
+      name: nginx
+      daemon_reload: true
+      enabled: true
+      state: restarted
+    
