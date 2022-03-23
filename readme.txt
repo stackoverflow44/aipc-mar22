@@ -1,1 +1,1 @@
-##Automating Infrastructure and Provisioning
+Automating Infrastructure and Provisioning
