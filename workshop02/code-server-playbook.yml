@@ -12,11 +12,11 @@
     loop:
     - "{{ install_dir }}"
     - /var/lib/code-server
-  - name: Check if the file tarball exists
+  - name: Check if the file exists
     stat:
       path: "{{ cs_dir }}"
     register: cs_tarball
-  - name: Download tarball and unarchive
+  - name: Download installer and unarchive
     unarchive:
       src: "{{ cs_url }}"
       dest: "{{ install_dir }}"
