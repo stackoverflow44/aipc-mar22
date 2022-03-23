@@ -1,0 +1,4 @@
+install_dir: /usr/lib/code-server
+cs: "code-server-4.2.0-linux-amd64"
+cs_url: "https://github.com/coder/code-server/releases/download/v4.2.0/{{ cs }}.tar.gz"
+cs_dir: "{{ install_dir }}/{{ cs }}"

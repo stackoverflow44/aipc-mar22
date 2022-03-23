@@ -1,12 +1,8 @@
 ---
+# Note: variables are located at /group_vars/all/vars 
 # Block 1 - Setup code server
 - name: Setup code-server
   hosts: all
-  vars:
-    install_dir: /usr/lib/code-server
-    cs: "code-server-4.2.0-linux-amd64"
-    cs_url: "https://github.com/coder/code-server/releases/download/v4.2.0/{{ cs }}.tar.gz"
-    cs_dir: "{{ install_dir }}/{{ cs }}"
   tasks:
   - name: Create required directory
     file:
@@ -26,12 +22,6 @@
       dest: "{{ install_dir }}"
       remote_src: yes
     when: not cs_tarball.stat.exists 
-  # - name: Copy the contents from /usr/local/opt to /usr/lib/code-server
-  #   copy:
-  #     src: "{{ cs_dir }}/"
-  #     dest: /usr/lib/code-server/
-  #     force: no
-  #     remote_src: yes
   - name: Link code-server binary to /usr/bin
     file:
       src: /usr/lib/code-server/{{ cs }}/bin/code-server
@@ -71,7 +61,7 @@
     - Restart nginx service
   - name: Print domain name
     debug:
-       msg: "code server domain: {{ code_server_domain }}"
+       msg: "code server domain: http://{{ code_server_domain }}"
 
   handlers:
   - name: Restart nginx service
