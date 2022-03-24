@@ -5,3 +5,5 @@ terraform.tfstate.backup
 root@*
 .terraform/
 *.lock.info
+variables.pkrvars.hcl
+s3_backend.hcl
