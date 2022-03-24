@@ -1,0 +1,42 @@
+---
+# Note: variables are located at /group_vars/all/vars 
+# Block 1 - Setup code server
+- name: Setup code-server
+  hosts: all
+  tasks:
+  - name: Generate code-server.service file
+    template:
+      src: "./templates/code-server-service.j2"
+      dest: /lib/systemd/system/code-server.service
+  - name: Restart code-server service
+    systemd:
+      name: code-server
+      daemon_reload: true
+      enabled: true
+      state: restarted
+
+# Block 2 - Setup nginx server
+- name: Setup nginx server
+  hosts: all
+  tasks:
+  - name : Update nginx config file
+    template:
+        src: "./templates/code-server-conf.j2"
+        dest: "/etc/nginx/sites-available/code-server.conf"
+  - name: Link nginx sites-available/code-server.conf to sites-enabled
+    file:
+      src: /etc/nginx/sites-available/code-server.conf
+      dest: /etc/nginx/sites-enabled/code-server.conf
+      state: link
+  - name: Restart nginx service
+    systemd:
+      name: nginx
+      daemon_reload: true
+      enabled: true
+      state: restarted
+  - name: Print domain name
+    debug:
+       msg: "code server domain: http://{{ code_server_domain }}"
+
+
+    

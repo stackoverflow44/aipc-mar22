@@ -1,0 +1,37 @@
+---
+# Note: variables are located at /group_vars/all/vars 
+# Block 1 - Setup code server
+- name: Setup code-server
+  hosts: all
+  tasks:
+  - name: Create required directory
+    file:
+      name: "{{ item }}"
+      state: directory
+      mode: '0755'
+    loop:
+    - "{{ install_dir }}"
+    - /var/lib/code-server
+  - name: Check if the file exists
+    stat:
+      path: "{{ cs_dir }}"
+    register: cs_tarball
+  - name: Download installer and unarchive
+    unarchive:
+      src: "{{ cs_url }}"
+      dest: "{{ install_dir }}"
+      remote_src: yes
+    when: not cs_tarball.stat.exists 
+  - name: Link code-server binary to /usr/bin
+    file:
+      src: /usr/lib/code-server/{{ cs }}/bin/code-server
+      dest: /usr/bin/code-server
+      state: link
+
+# Block 2 - Setup nginx server
+- name: Setup nginx server
+  hosts: all
+  tasks:
+  - name: Install nginx package
+    apt: name=nginx state=latest update_cache=yes
+  
